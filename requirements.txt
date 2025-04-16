@@ -1,0 +1,17 @@
+pydantic
+sqlmodel
+uvicorn
+jose
+jwt
+pyjwt
+# emails
+typing
+fastapi
+uuid
+# secrets
+python-secrets
+# warning
+pydantic_settings
+sentry-sdk
+passlib
+bcrypt
