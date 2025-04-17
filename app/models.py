@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 from sqlmodel import SQLModel, Field
 import uuid 
 from enum import Enum
@@ -56,3 +57,12 @@ class ShowOffer(Offer):
 class Message(BaseModel):
     message: str
     id: uuid.UUID
+
+
+class Trade(BaseModel):
+    pass
+
+class Setting(BaseSettings):
+    pass
+    # API_KEY = str
+    # env_file="../.env"
