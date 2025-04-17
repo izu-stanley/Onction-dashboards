@@ -1,14 +1,31 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from typing import List, Annotated, Any, Union
-from models import Offer, Create, Message, Update, ShowOffer
+from models import Offer, Create, Message, Update, ShowOffer, Trade, Setting
 from sqlmodel import Session
 from db.db import get_db
 import uuid
+import httpx
+import os
 
 SessionInit = Annotated[Session,  Depends(get_db)]
+setting = Setting()
 router = APIRouter(prefix="/Genco-Dashboard",tags=["Genco Dashboard"])
 
+api_key = os.getenv('API_KEY')
+url = f"https://onction-matching-engine-762140739532.europe-west2.run.app/docs#/default/match_v1_match_post/{api_key}"
 
+
+@router.get("/get_all_trades", response_model=List[Trade])
+async def get_all_trades() -> Any:
+    try:
+        async with httpx.AsyncClient() as client:
+            trade = await client.get(url)
+            all_trade = trade.json()
+            return all_trade
+    except Exception as error:
+         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
+ 
+    
 
 @router.get("/offer", response_model=List[ShowOffer])
 def all_offer(*, session: SessionInit) -> Any:

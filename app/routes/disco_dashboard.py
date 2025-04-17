@@ -9,6 +9,9 @@ SessionInit = Annotated[Session,  Depends(get_db)]
 router = APIRouter(prefix="/Disco-Dashboard",tags=["Disco Dashboard"])
 
 
+
+
+
 @router.get("/bid", response_model=List[ShowBid])
 def all_bid(*, session: SessionInit) ->  Any:
     try:
@@ -21,7 +24,6 @@ def all_bid(*, session: SessionInit) ->  Any:
 @router.post("/create_bid", response_model=Union[ShowBid,Message], status_code=status.HTTP_201_CREATED)
 def create_bid(*, session: SessionInit, bid_in: List[Create]) -> Any:
     create_bid = []
-
     try:
         for bid in bid_in:
             bid = Bid.model_validate(bid)
@@ -52,7 +54,7 @@ def update_bid(*,
         session.commit()
         session.refresh(bid)
         return Message(
-                message="Order updated successfully",
+                message="Bid updated successfully",
                 id=bid.bid_id)
     
     except Exception as error:
