@@ -9,4 +9,4 @@ ENV PATH="/root/.local/bin:$PATH"
 COPY . .
 RUN pip install -r requirements.txt
 RUN cd app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
