@@ -36,8 +36,7 @@ def create_offer(*, session: SessionInit, offer_in: List[Create]) -> Any:
             session.refresh(offer)
         create_offer.append(offer)
         return Message(
-            message="Offer submitted successfully",
-            id=offer.order_ref)
+            message="Offer submitted successfully")
     except Exception as error:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
 
@@ -58,8 +57,7 @@ def update_offer(*,
         session.commit()
         session.refresh(offer)
         return Message(
-                message="Offer updated successfully",
-                id=offer.order_ref)
+                message="Offer updated successfully")
     except Exception as error:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
 
@@ -75,5 +73,4 @@ def delete_offer(*, id: uuid.UUID,
     session.delete(offer)
     session.commit()
     return Message(
-            message="offer deleted successfully",
-            id=offer.order_ref)
+            message="offer deleted successfully")

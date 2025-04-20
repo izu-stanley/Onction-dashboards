@@ -29,8 +29,7 @@ def create_bid(*, session: SessionInit, bid_in: List[Create]) -> Any:
             session.refresh(bid)
         create_bid.append(bid)
         return Message(
-            message="bid submitted successfully",
-            id=bid.order_ref)
+            message="bid submitted successfully")
     except Exception as error:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
 
@@ -51,8 +50,7 @@ def update_bid(*,
         session.commit()
         session.refresh(bid)
         return Message(
-                message="Bid updated successfully",
-                id=bid.order_ref)
+                message="Bid updated successfully")
     
     except Exception as error:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
@@ -70,5 +68,4 @@ def delete_bid(*, id: uuid.UUID,
     session.delete(bid)
     session.commit()
     return Message(
-            message="Bid deleted successfully",
-            id=bid.order_ref)
+            message="Bid deleted successfully")

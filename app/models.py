@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from sqlmodel import SQLModel, Field
 import uuid 
 from enum import Enum
@@ -32,7 +32,7 @@ class Create(SQLModel):
     order_type: OrderType
     quantity: int
     price: float
-    timeslot: time
+    timeslot: str = "10:00:00"
     delivery_day: date
     max_dispatch: int
     quantity_filled: int
@@ -44,18 +44,18 @@ class Order(Create, table=True):
     order_type: str = OrderType
     quantity: int
     price: float
-    timeslot: time
+    timeslot: str = "10:00:00"
     delivery_day: date
     fully_matched: Optional[bool] = False
     max_dispatch: int
     quantity_filled: int
 
 class Trades(SQLModel, table=True):
-    matching_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[int] = Field(default_factory=uuid.uuid4, primary_key=True)
+    matching_id: uuid.UUID 
     quantity: int
     trade_id: uuid.UUID
     buyer_order_ref: uuid.UUID
-    id: int
     buyer_id: str
     timeslot: time
     seller_order_ref: uuid.UUID
@@ -63,7 +63,6 @@ class Trades(SQLModel, table=True):
     price: int
     created_at: datetime
     delivery_day: date
-
 
 class ShowOrder(Order):
     pass
@@ -77,4 +76,3 @@ class Update(Create):
 
 class Message(BaseModel):
     message: str
-    id: uuid.UUID

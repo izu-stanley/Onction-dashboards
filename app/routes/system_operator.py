@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from typing import  Annotated, Any
-from models import Order, Trades
+from models import Order, Trades, Message
 from sqlmodel import Session,  select
 from db.db import get_db
 from config import settings
 import requests
 from datetime import date
-import uuid
 
 
 SessionInit = Annotated[Session,  Depends(get_db)]
@@ -37,8 +36,7 @@ def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
                                        "order_ref": str(order.order_ref), 
                                        "delivery_day": str(order.delivery_day), 
                                        "timeslot": str(order.timeslot) 
-                                       }for order in orders],
-                                )
+                                       }for order in orders])
         for new_trade in trade.json():
             new_trade = Trades.model_validate(new_trade)
             session.add(new_trade)
@@ -59,11 +57,31 @@ def get_trades(*, session: SessionInit) -> Any:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
     
 
-@router.get("/get_trades{id}")
+@router.get("/get_trades/{id}")
 def get_trades(*, session: SessionInit,
-                id: int) -> Any:
+                buyer_id: str,
+                seller_id: str ) -> Any:
+    try:
+        # trade = session.query(Trades).filter(Trades.id == id).first()
+        trade = session.query(Trades).filter(Trades.buyer_id == buyer_id,
+                                             Trades.seller_id == seller_id).first()
+        if not trade:
+              raise HTTPException(status_code=404, detail="trade not found or has been deleted")
+        return trade
+    except Exception as error:
+         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
+
+
+@router.delete("delete_trade/{id}", response_model=Message)
+def delete_trade(*, session: SessionInit, id: int) -> Any:
     try:
         trade = session.query(Trades).filter(Trades.id == id).first()
-        return trade
+        if not trade:
+              raise HTTPException(status_code=404, detail="trade not found")
+        session.delete(trade)
+        session.commit()
+        return Message(
+            message="Trade deleted successfully"
+            )
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
