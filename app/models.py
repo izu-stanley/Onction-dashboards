@@ -1,48 +1,73 @@
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings
 from sqlmodel import SQLModel, Field
 import uuid 
 from enum import Enum
-from datetime import date, time
+from datetime import date, time,  datetime
+from typing import Optional
 
 class Status(Enum):
     PENDING: str = "pending"
     MATCHED: str = "matched"
     REJECTED: str = "rejected"
     
+
+    
 class OrderType(Enum):
-    BUY: str = "buy"
-    SELL: str = "sell"
+    BUY: str = "BUY"
+    SELL: str = "SELL"
+
+
+class CommonName(Enum):
+    GEN_A: str = "Gen A"
+    GEN_B: str = "Gen B"
+    GEN_C: str = "Gen C"
+    GEN_D: str = "Gen D"
+    UTILITY_X: str = "Utility X"
+    UTILITY_Y: str = "Utility Y"
+    UTILITY_Z: str = "Utility Z"
 
 class Create(SQLModel):
+    common_name: CommonName
+    trader_id:  CommonName
     order_type: OrderType
-    pricePerMWh: float
-    quantityMW: int
-    delivery_date: date
-    delivery_time: time
+    quantity: int
+    price: float
+    timeslot: time
+    delivery_day: date
+    max_dispatch: int
+    quantity_filled: int
 
-class Bid(Create, table=True):
-    bid_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    delivery_date: date
-    delivery_time: time
-    quantityMW: int
-    pricePerMWh: float
-    order_type: OrderType
-    # status: Status
+class Order(Create, table=True):
+    order_ref: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    common_name: str = CommonName
+    trader_id: str= CommonName
+    order_type: str = OrderType
+    quantity: int
+    price: float
+    timeslot: time
+    delivery_day: date
+    fully_matched: Optional[bool] = False
+    max_dispatch: int
+    quantity_filled: int
 
-class ShowBid(Bid):
+class Trades(SQLModel, table=True):
+    matching_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    quantity: int
+    trade_id: uuid.UUID
+    buyer_order_ref: uuid.UUID
+    id: int
+    buyer_id: str
+    timeslot: time
+    seller_order_ref: uuid.UUID
+    seller_id: str
+    price: int
+    created_at: datetime
+    delivery_day: date
+
+
+class ShowOrder(Order):
     pass
 
-
-class Offer(Create, table=True):
-    offer_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    delivery_date: date
-    delivery_time: time
-    quantityMW: int
-    pricePerMWh: float
-    order_type: OrderType
-    # status: Status
-  
 class Update(Create):
     order_type: OrderType
     pricePerMWh: float
@@ -50,19 +75,6 @@ class Update(Create):
     delivery_date: date
     delivery_time: time
 
-class ShowOffer(Offer):
-    pass
-
-
 class Message(BaseModel):
     message: str
     id: uuid.UUID
-
-
-class Trade(BaseModel):
-    pass
-
-class Setting(BaseSettings):
-    pass
-    # API_KEY = str
-    # env_file="../.env"
