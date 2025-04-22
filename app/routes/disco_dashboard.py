@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from typing import List, Annotated, Any, Union
-from models import  Create, Bid, Message, Update, ShowBid
+from models import  Create, Order, Message, Update, ShowOrder
 from sqlmodel import Session
 from db.db import get_db
 import uuid
@@ -9,43 +9,39 @@ SessionInit = Annotated[Session,  Depends(get_db)]
 router = APIRouter(prefix="/Disco-Dashboard",tags=["Disco Dashboard"])
 
 
-
-
-
-@router.get("/bid", response_model=List[ShowBid])
+@router.get("/bid", response_model=List[ShowOrder])
 def all_bid(*, session: SessionInit) ->  Any:
     try:
-        bid = session.query(Bid).all()
+        bid = session.query(Order).all()
         return bid
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
 
 
-@router.post("/create_bid", response_model=Union[ShowBid,Message], status_code=status.HTTP_201_CREATED)
+@router.post("/create_bid", response_model=Union[ShowOrder,Message], status_code=status.HTTP_201_CREATED)
 def create_bid(*, session: SessionInit, bid_in: List[Create]) -> Any:
     create_bid = []
     try:
         for bid in bid_in:
-            bid = Bid.model_validate(bid)
+            bid = Order.model_validate(bid)
             session.add(bid)
             session.commit()
             session.refresh(bid)
         create_bid.append(bid)
         return Message(
-            message="bid submitted successfully",
-            id=bid.bid_id)
+            message="bid submitted successfully")
     except Exception as error:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
 
 
-@router.put("/update_bid/{id}", response_model=Union[ShowBid,Message], status_code=status.HTTP_200_OK)
+@router.put("/update_bid/{id}", response_model=Union[ShowOrder,Message], status_code=status.HTTP_200_OK)
 def update_bid(*,
                  id: uuid.UUID, 
                  bid_in: Update,
                  session: SessionInit) -> Any:
     """Update a Bid."""
     try:
-        bid = session.get(Bid, id)
+        bid = session.get(Order, id)
         if not bid:
             raise HTTPException(status_code=404, detail="Order not found")
         update_bid = bid_in.model_dump(exclude_unset=True)
@@ -54,8 +50,7 @@ def update_bid(*,
         session.commit()
         session.refresh(bid)
         return Message(
-                message="Bid updated successfully",
-                id=bid.bid_id)
+                message="Bid updated successfully")
     
     except Exception as error:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
@@ -67,11 +62,10 @@ def delete_bid(*, id: uuid.UUID,
     """
     Delete an Order.
     """
-    bid = session.get(Bid, id)
+    bid = session.get(Order, id)
     if not bid:
         raise HTTPException(status_code=404, detail="Bid not found")
     session.delete(bid)
     session.commit()
     return Message(
-            message="Bid deleted successfully",
-            id=bid.bid_id)
+            message="Bid deleted successfully")
