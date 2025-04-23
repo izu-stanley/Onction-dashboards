@@ -13,7 +13,7 @@ SessionInit = Annotated[Session,  Depends(get_db)]
 router = APIRouter(prefix="/tradeclearing",tags=["Trade Clearing"])
 
 url = f"https://onction-matching-engine-762140739532.europe-west2.run.app/v1/match"
-api_key = os.getenv('API_KEY')
+api_key = os.getenv('api-key')
 
 @router.post("/trigger_matching_engine")
 def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
