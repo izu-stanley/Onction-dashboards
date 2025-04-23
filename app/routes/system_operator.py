@@ -6,12 +6,14 @@ from db.db import get_db
 from config import settings
 import requests
 from datetime import date
+import os 
 
 
 SessionInit = Annotated[Session,  Depends(get_db)]
 router = APIRouter(prefix="/tradeclearing",tags=["Trade Clearing"])
 
 url = f"https://onction-matching-engine-762140739532.europe-west2.run.app/v1/match"
+api_key = os.getenv('api-key')
 
 @router.post("/trigger_matching_engine")
 def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
@@ -19,7 +21,7 @@ def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
         params = {"clearing_date": str(date)}
         headers = {
             "accept": "application/json",
-            "X-API-Key": f"{settings.SECRET_KEY}",
+            "X-API-Key": f"{api_key}",
             "Content-Type": "application/json",
         }  
         query = select(Order).where(Order.delivery_day == date)
