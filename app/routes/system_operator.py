@@ -9,12 +9,11 @@ from datetime import date
 import os 
 
 
-
 SessionInit = Annotated[Session,  Depends(get_db)]
 router = APIRouter(prefix="/tradeclearing",tags=["Trade Clearing"])
 
 url = f"https://onction-matching-engine-762140739532.europe-west2.run.app/v1/match"
-api_key = os.getenv('api-key')
+api_key = os.getenv('API_KEY')
 
 @router.post("/trigger_matching_engine")
 def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
@@ -40,12 +39,15 @@ def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
                                        "delivery_day": str(order.delivery_day), 
                                        "timeslot": str(order.timeslot) 
                                        }for order in orders])
-        for new_trade in trade.json():
-            new_trade = Trades.model_validate(new_trade)
-            session.add(new_trade)
-            session.commit()
-            session.refresh(new_trade)
-        create_trades.append(new_trade)
+        if trade.json() == []:
+            raise HTTPException(status_code=404, detail=str(trade.json()))
+        else:
+            for new_trade in trade.json():
+                new_trade = Trades.model_validate(new_trade)
+                session.add(new_trade)
+                session.commit()
+                session.refresh(new_trade)
+            create_trades.append(new_trade)
         return create_trades
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
@@ -65,7 +67,6 @@ def get_trades(*, session: SessionInit,
                 buyer_id: str,
                 seller_id: str ) -> Any:
     try:
-        # trade = session.query(Trades).filter(Trades.id == id).first()
         trade = session.query(Trades).filter(Trades.buyer_id == buyer_id,
                                              Trades.seller_id == seller_id).first()
         if not trade:
