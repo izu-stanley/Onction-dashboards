@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from typing import List, Annotated, Any, Union
-from models import  Create, Order, Message, Update, ShowOrder
+from models import  Create, Order, Message, Update, ShowOrder, Trades
 from sqlmodel import Session
 from db.db import get_db
 import uuid
@@ -16,6 +16,18 @@ def all_bid(*, session: SessionInit) ->  Any:
         return bid
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
+
+
+@router.get("/Trades/{Buyer_id}")
+def get_trades(*, session: SessionInit, buyer_id: str ) -> Any:
+    try:
+        trade = session.query(Trades).filter(Trades.buyer_id == buyer_id).all()
+        if not trade:
+              raise HTTPException(status_code=404, detail="trade not found or has been deleted")
+        return trade
+    except Exception as error:
+         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
+    
 
 
 @router.post("/create_bid", response_model=Union[ShowOrder,Message], status_code=status.HTTP_201_CREATED)
