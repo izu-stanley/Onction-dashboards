@@ -9,10 +9,10 @@ SessionInit = Annotated[Session,  Depends(get_db)]
 router = APIRouter(prefix="/Disco-Dashboard",tags=["Disco Dashboard"])
 
 
-@router.get("/bid", response_model=List[ShowOrder])
-def all_bid(*, session: SessionInit) ->  Any:
+@router.get("/bid/{trader_id}", response_model=List[ShowOrder])
+def all_bid(*, session: SessionInit, trader_id: str) ->  Any:
     try:
-        bid = session.query(Order).all()
+        bid = session.query(Order).filter(Order.trader_id == trader_id).all()
         return bid
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
