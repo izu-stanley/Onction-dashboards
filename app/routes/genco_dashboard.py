@@ -10,10 +10,10 @@ SessionInit = Annotated[Session, Depends(get_db)]
 router = APIRouter(prefix="/Genco-Dashboard", tags=["Genco Dashboard"])
 
 
-@router.get("/offer", response_model=List[ShowOrder])
-def all_offer(*, session: SessionInit) -> Any:
+@router.get("/offer/{trader_id}", response_model=List[ShowOrder])
+def all_offer(*, session: SessionInit, trader_id: str) -> Any:
     try:
-        offer = session.query(Order).all()
+        offer = session.query(Order).filter(Order.trader_id == trader_id).all()
         return offer
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
@@ -57,6 +57,7 @@ def update_offer(*,
         offer = session.get(Order, id)
         if not offer:
             raise HTTPException(status_code=404, detail="Offer not found")
+        
         update_offer = offer_in.model_dump(exclude_unset=True)
         offer.sqlmodel_update(update_offer)
         session.add(offer)
