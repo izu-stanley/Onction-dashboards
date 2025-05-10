@@ -48,12 +48,21 @@ def trigger_matching_engine(session: SessionInit, date: date) ->  Any:
                 # Update status of the orders in the database
                 buyer_ref = session.exec(select(Order).where(Order.order_ref == new_trade.buyer_order_ref)).all()
                 seller_ref = session.exec(select(Order).where(Order.order_ref == new_trade.seller_order_ref)).all()
-
+                
                 matched_trade = [buyer_ref, seller_ref]
                 for  _status in matched_trade:
                     for order in _status:
-                            order.status = Status.MATCHED
-                            session.add(order)
+                        if order:
+                            unmatched_trade = session.exec(select(Order).where(Order.order_ref != new_trade.seller_order_ref and
+                                                                                Order.order_ref != new_trade.buyer_order_ref )).all()
+                            for _order in unmatched_trade:
+                                if _order.status == Status.MATCHED or _order.status == Status.PENDING:
+                                    _order.status = Status.PENDING
+                                    _order.fully_matched = False
+                                    session.add(_order)
+                        order.status = Status.MATCHED
+                        order.fully_matched = True
+                        session.add(order)
 
                 session.add(new_trade)
                 session.commit()
@@ -99,14 +108,5 @@ def delete_trade(*, session: SessionInit, id: int) -> Any:
         return Message(
             message="Trade deleted successfully"
             )
-    except Exception as error:
-         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
-
-
-@router.get("/bid_offers/")
-def all_bid(*, session: SessionInit) ->  Any:
-    try:
-        bid = session.query(Order).all()
-        return bid
     except Exception as error:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= str(error))
