@@ -51,8 +51,6 @@ class Order(Create, table=True):
     max_dispatch: int
     quantity_filled: int
     status: Optional[Status] = Status.PENDING
-    class Config():
-        orm_mode = True
 
 class Trades(SQLModel, table=True):
     id: Optional[int] = Field(default_factory=uuid.uuid4, primary_key=True)
