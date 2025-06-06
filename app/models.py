@@ -5,11 +5,12 @@ from enum import Enum
 from datetime import date, time,  datetime
 from typing import Optional
 
-class Status(Enum):
+class Status(str, Enum):
     PENDING: str = "pending"
     MATCHED: str = "matched"
     REJECTED: str = "rejected"
-    
+    APPROVED: str = "approved"
+    DENIED: str = "denied"
 
     
 class OrderType(Enum):
@@ -40,7 +41,7 @@ class Create(SQLModel):
 class Order(Create, table=True):
     order_ref: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     common_name: str = CommonName
-    trader_id: str= CommonName
+    trader_id: str = CommonName
     order_type: str = OrderType
     quantity: int
     price: float
@@ -49,6 +50,7 @@ class Order(Create, table=True):
     fully_matched: Optional[bool] = False
     max_dispatch: int
     quantity_filled: int
+    status: Optional[Status] = Status.PENDING
 
 class Trades(SQLModel, table=True):
     id: Optional[int] = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -68,11 +70,17 @@ class ShowOrder(Order):
     pass
 
 class Update(Create):
-    order_type: OrderType
-    pricePerMWh: float
-    quantityMW: int
-    delivery_date: date
-    delivery_time: time
+    common_name: str = CommonName
+    trader_id: str= CommonName
+    order_type: str = OrderType
+    quantity: int
+    price: float
+    timeslot: str = "10:00:00"
+    delivery_day: date
+    fully_matched: Optional[bool] = False
+    max_dispatch: int
+    quantity_filled: int
+    status: Status
 
 class Message(BaseModel):
     message: str
