@@ -38,8 +38,12 @@ jobs:
           fi
 
 
-          git checkout master
-          git merge --no-edit upstream/master
-          git push origin master
+          # Detect default branch (e.g. master or main)
+          DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
+          
+          git checkout "$DEFAULT_BRANCH"
+          git merge --no-edit upstream/"$DEFAULT_BRANCH"
+          git push origin "$DEFAULT_BRANCH"
+
 
           # etc
