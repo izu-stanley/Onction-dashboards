@@ -26,15 +26,11 @@ jobs:
 
           # Neither forget the -b opt,
           # the feature/x ref is ambiguous at this stage
-          if git ls-remote --exit-code --heads origin feature/x && \
-             git ls-remote --exit-code --heads upstream feature/x; then
-            git fetch origin feature/x
-            git fetch upstream feature/x
-            git checkout -b feature/x origin/feature/x
-            git merge --no-edit upstream/feature/x
-            git push origin feature/x
+          if git ls-remote --exit-code --heads upstream "$DEFAULT_BRANCH"; then
+            git merge --no-edit upstream/"$DEFAULT_BRANCH"
+            git push origin "$DEFAULT_BRANCH"
           else
-            echo "feature/x does not exist in origin or upstream. Skipping feature merge."
+            echo "Branch $DEFAULT_BRANCH does not exist on upstream. Skipping upstream merge."
           fi
 
 
